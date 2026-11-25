@@ -60,9 +60,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, leadId: lead.id });
   } catch (err: unknown) {
+    const errorMsg = (err as Error)?.message || 'Internal server error processing inquiry.';
     console.error('[Contact API Error]:', err);
     return NextResponse.json(
-      { error: 'Internal server error processing inquiry.' },
+      { error: 'Failed to process inquiry.', details: errorMsg },
       { status: 500 }
     );
   }
