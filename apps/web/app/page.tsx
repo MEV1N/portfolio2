@@ -2,7 +2,38 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Send, CheckCircle2 } from 'lucide-react';
+import { Send, CheckCircle2, ExternalLink } from 'lucide-react';
+
+const featuredWebsites = [
+  {
+    number: '01',
+    title: 'Tempo',
+    tagline: 'Productivity & Rhythm Web App',
+    url: 'https://tempo-six-plum.vercel.app/',
+    image: '/projects/tempo.png',
+  },
+  {
+    number: '02',
+    title: 'Yumzy',
+    tagline: 'Campus Canteen Ordering System',
+    url: 'https://canteen-app-9p2e.vercel.app/',
+    image: '/projects/canteen.png',
+  },
+  {
+    number: '03',
+    title: 'HIVE',
+    tagline: 'Student Developer Community Hub',
+    url: 'https://hive-five-psi.vercel.app/',
+    image: '/projects/hive.png',
+  },
+  {
+    number: '04',
+    title: 'Impactor 25',
+    tagline: 'Innovation & Hackathon Event Portal',
+    url: 'https://impactor-2025.vercel.app/',
+    image: '/projects/impactor.png',
+  },
+];
 
 export default function PortfolioPage() {
   const [cursorLabel, setCursorLabel] = useState('+');
@@ -503,48 +534,54 @@ export default function PortfolioPage() {
         <div className="section-solid-title">WEBSITES.</div>
 
         <div className="works-grid">
-          <Link
-            href="/work/web"
-            style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-          >
-            <div className="work-card fade-up">
-              <div className="work-number">01</div>
-              <div className="work-card-label">
-                <h4>Platform Redesign</h4>
-                <p>Community App</p>
+          {featuredWebsites.map((site) => (
+            <a
+              key={site.url}
+              href={site.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+            >
+              <div
+                className="work-card fade-up"
+                style={{ aspectRatio: '16/10' }}
+                onMouseEnter={() => setCursorLabel('VISIT')}
+                onMouseLeave={() => setCursorLabel('+')}
+              >
+                <img src={site.image} alt={site.title} loading="lazy" />
+                <div className="work-number">{site.number}</div>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '14px',
+                    right: '14px',
+                    background: 'rgba(0, 0, 0, 0.65)',
+                    backdropFilter: 'blur(8px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '20px',
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    zIndex: 2,
+                  }}
+                >
+                  <span>Visit Live</span>
+                  <ExternalLink size={12} />
+                </div>
+                <div className="work-card-label" style={{ zIndex: 2 }}>
+                  <h4>{site.title}</h4>
+                  <p>{site.tagline}</p>
+                </div>
               </div>
-            </div>
-          </Link>
-
-          <Link
-            href="/work/video"
-            style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-          >
-            <div className="work-card fade-up">
-              <div className="work-number">02</div>
-              <div className="work-card-label">
-                <h4>E-Commerce Storefront</h4>
-                <p>Web Platform</p>
-              </div>
-            </div>
-          </Link>
-
-          <Link
-            href="/work/design"
-            style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
-          >
-            <div className="work-card fade-up">
-              <div className="work-number">03</div>
-              <div className="work-card-label">
-                <h4>Event Hub</h4>
-                <p>Landing Site</p>
-              </div>
-            </div>
-          </Link>
+            </a>
+          ))}
         </div>
 
         <div className="works-caption">
-          <span>Featured Work</span> — Tap to visit websites
+          <span>Live Projects</span> — Tap to visit deployed websites
         </div>
       </section>
 

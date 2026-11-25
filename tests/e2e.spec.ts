@@ -17,6 +17,14 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     await expect(page.getByText('TOOLS I USE')).toBeVisible();
     await expect(page.getByRole('heading', { name: /LET'S.*WORK.*TOGETHER/i })).toBeVisible();
     await expect(page.locator('img[alt="Mevin"]')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tempo' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Yumzy' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'HIVE' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Impactor 25' })).toBeVisible();
+    await expect(page.locator('a[href="https://tempo-six-plum.vercel.app/"]')).toBeVisible();
+    await expect(page.locator('a[href="https://canteen-app-9p2e.vercel.app/"]')).toBeVisible();
+    await expect(page.locator('a[href="https://hive-five-psi.vercel.app/"]')).toBeVisible();
+    await expect(page.locator('a[href="https://impactor-2025.vercel.app/"]')).toBeVisible();
   });
 
   test('Dedicated Web Dev Case Study page renders with benchmarks', async ({ page }) => {
