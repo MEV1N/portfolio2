@@ -16,6 +16,6 @@ export const config = {
   telegramChatId: process.env.TELEGRAM_CHAT_ID || '',
   telegramUseWebhook: process.env.TELEGRAM_USE_WEBHOOK || '',
   adminSecret: process.env.ADMIN_SECRET || 'mevin_freelance_9f8a7d6c5b4e3a2f1d0c9b8a7e6f5d4c',
-  nextPublicAppUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  nextPublicAppUrl: (process.env.NEXT_PUBLIC_APP_URL || 'https://mevin-portfolio.vercel.app').replace(/\/+$/, ''),
   isDev: process.env.NODE_ENV !== 'production',
 };

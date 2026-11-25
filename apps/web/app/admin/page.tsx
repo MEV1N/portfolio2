@@ -248,9 +248,9 @@ function AdminDashboardContent() {
   };
 
   const copyPitch = (lead: Lead) => {
-    const pitch = `Hey ${lead.name.split(' ')[0]}, audited your ${lead.platform} presence. Noticed: ${
-      lead.auditSummary || 'great growth potential'
-    }. Here is how we engineer sub-200ms systems and retention edits: http://localhost:3000/r/${lead.id}`;
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : 'https://mevin-portfolio.vercel.app')).replace(/\/+$/, '');
+    const firstName = lead.name.split(' ')[0] || 'there';
+    const pitch = `Hey ${firstName}, came across your work on ${lead.platform} and loved what you're building. Put together a few ideas and similar projects you can check out here: ${baseUrl}/r/${lead.id} — would love to chat if you're open to it!`;
     navigator.clipboard.writeText(pitch);
     setCopiedId(lead.id);
     setTimeout(() => setCopiedId(null), 2500);

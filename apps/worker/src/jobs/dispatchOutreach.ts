@@ -90,9 +90,10 @@ export async function dispatchOutreachJob(): Promise<number> {
       lead.platform === 'google_maps' ||
       lead.contactEmailOrHandle.includes('@');
 
+    const firstName = lead.name.split(' ')[0] || 'there';
     const draftPitch =
       lead.messageThreads[0]?.content ||
-      `Hey ${lead.name.split(' ')[0]}, audited your digital presence and identified key bottlenecks. See our case studies at ${config.nextPublicAppUrl}/r/${lead.id}`;
+      `Hey ${firstName}, came across your work and loved what you're building. Put together a few ideas and similar projects you can check out here: ${config.nextPublicAppUrl}/r/${lead.id} — would love to chat if you're open to it!`;
 
     if (isEmailLead && transporter) {
       // Format plain-text email with clean sign-off and opt-out
@@ -100,10 +101,10 @@ export async function dispatchOutreachJob(): Promise<number> {
 
 Best,
 Mevin
-mevin.studio
+${config.nextPublicAppUrl}
 
 ---
-PS: If you would rather not hear from me, just reply with 'unsubscribe' and I will never contact you again.`;
+PS: If you'd rather I not reach out, just let me know and I won't email again.`;
 
       try {
         console.log(`[dispatch-outreach] Dispatching Gmail outreach to ${lead.contactEmailOrHandle}...`);
