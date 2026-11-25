@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "prisma generate --schema=../../packages/db/prisma/schema.prisma && next build",
+    "build": "prisma generate --schema=../../packages/db/prisma/schema.prisma && node ../../scripts/copy-prisma.mjs && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
