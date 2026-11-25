@@ -99,7 +99,8 @@ Instructions:
    - Greeting: "Hey ${firstName}," (DO NOT call them Marcus unless the first name above is literally Marcus).
    - Sentence 1: A genuine, friendly compliment about what they are building or their content. Sound like a real person writing a direct email, NOT an AI bot or corporate agency.
    - Sentence 2: A simple, non-jargony observation of an area they could improve. If page load metrics are provided above, mention naturally that the mobile page takes about ${metrics?.lcp || 'a few seconds'} to load the main banner, which might cause people to click away. Strictly NO buzzwords, NO acronyms (avoid TTFB, LCP, SSR, etc.), NO robotic phrases like "audited your digital presence", "sub-200ms architecture", or "bottlenecks".
-   - Sentence 3: A friendly, low-pressure invite to check out similar work and chat: "Put together a few similar projects and demos you can check out here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat next week!"
+   - Sentence 3: A friendly, low-pressure invite to check out your portfolio and chat: "You can check out some of my recent work and projects here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat next week!"
+   - NO "LIVE DEMO" OR "DEMO" PHRASING: NEVER say the portfolio link is a "live demo" or "demo of your site" — refer to it strictly as your portfolio, previous projects, or recent work.
    - NO PRICING IN PITCH: Do NOT quote or mention pricing or rates in the cold pitch. Pricing is discussed and finalized personally on a call after project scope is established.
 
 Respond ONLY in valid JSON format:
@@ -140,7 +141,7 @@ Respond ONLY in valid JSON format:
                 ? parsed.matchedService
                 : 'web',
               auditSummary: parsed.auditSummary || 'High-potential engineering sprint candidate.',
-              threeSentencePitch: parsed.threeSentencePitch || `Hey, noticed your site could benefit from sub-200ms Next.js optimizations. See our case studies: ${config.nextPublicAppUrl}/r/${leadId}`,
+              threeSentencePitch: parsed.threeSentencePitch || `Hey, came across your work and loved what you're building. You can check out some of my recent work and projects here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick chat!`,
             };
           }
         }
@@ -161,7 +162,7 @@ Respond ONLY in valid JSON format:
   return heuristicAuditor(leadName, platform, leadId, sourceUrl);
 }
 
-function heuristicAuditor(
+export function heuristicAuditor(
   leadName: string,
   platform: string,
   leadId: string,
@@ -189,6 +190,6 @@ function heuristicAuditor(
     fitScore: 8,
     matchedService,
     auditSummary: `Identified an opportunity to improve user experience and speed on ${platform}.`,
-    threeSentencePitch: `${greeting} came across your work on ${platform} and really loved what you're building. Noticed a few quick tweaks to page speed and mobile flow that could help visitors stick around longer. Put together a few similar projects and live demos here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat!`,
+    threeSentencePitch: `${greeting} came across your work on ${platform} and really loved what you're building. Noticed a few quick tweaks to page speed and mobile flow that could help visitors stick around longer. You can check out some of my recent work and projects here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat!`,
   };
 }

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { escapeHtml, formatTelegramDossierHtml } from '../apps/web/lib/telegram';
 import { fetchPageSpeedMetrics } from '../apps/worker/src/lib/pagespeed';
 import { extractEmailsFromHtml, isValidContactEmail } from '../apps/worker/src/utils/enrichEmail';
-import { isSubBudgetOrHobbyist, isSub500BudgetOrHobbyist } from '../apps/worker/src/lib/gemini';
+import { isSubBudgetOrHobbyist, isSub500BudgetOrHobbyist, heuristicAuditor } from '../apps/worker/src/lib/gemini';
 import { isIndianLead } from '../apps/worker/src/jobs/discoverLeads';
 
 test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
@@ -558,5 +558,13 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     expect(isIndianLead({ contextSnippet: '[r/indianstartups] Hiring Next.js developer for SaaS launch' })).toBe(true);
     expect(isIndianLead({ contactEmailOrHandle: '+919876543210' })).toBe(true);
     expect(isIndianLead({ sourceUrl: 'https://apexcloud.io', contextSnippet: 'Show HN launch in San Francisco' })).toBe(false);
+  });
+
+  test('Outreach pitch generator introduces portfolio as recent work/portfolio and never says live demo', () => {
+    const audit = heuristicAuditor('Elena Rostova (Apex Cloud)', 'reddit', 'apex-lead', 'SaaS founder launching beta');
+    expect(audit.threeSentencePitch.toLowerCase()).not.toContain('live demo');
+    expect(audit.threeSentencePitch.toLowerCase()).not.toContain('demos here');
+    expect(audit.threeSentencePitch).toContain('recent work');
+    expect(audit.threeSentencePitch).toContain('/r/apex-lead');
   });
 });

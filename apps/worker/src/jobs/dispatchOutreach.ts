@@ -93,7 +93,7 @@ export async function dispatchOutreachJob(): Promise<number> {
     const firstName = lead.name.split(' ')[0] || 'there';
     const draftPitch =
       lead.messageThreads[0]?.content ||
-      `Hey ${firstName}, came across your work and loved what you're building. Put together a few ideas and similar projects you can check out here: ${config.nextPublicAppUrl}/r/${lead.id} — would love to chat if you're open to it!`;
+      `Hey ${firstName}, came across your work and loved what you're building. You can check out some of my recent work and projects here: ${config.nextPublicAppUrl}/r/${lead.id} — would love to chat if you're open to it!`;
 
     if (isEmailLead && transporter) {
       // Format plain-text email with clean sign-off and opt-out
