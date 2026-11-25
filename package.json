@@ -6,6 +6,9 @@
   "scripts": {
     "build": "pnpm -r run build",
     "typecheck": "pnpm -r run typecheck",
+    "start": "pnpm --filter web start",
+    "start:web": "pnpm --filter web start",
+    "start:worker": "pnpm --filter worker start",
     "dev": "pnpm --filter web dev",
     "worker": "pnpm --filter worker dev",
     "seed": "pnpm --filter db run seed",
