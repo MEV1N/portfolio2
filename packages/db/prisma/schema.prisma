@@ -1,0 +1,74 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Lead {
+  id                   String          @id @default(cuid())
+  name                 String
+  platform             String          // "google_maps" | "youtube" | "reddit" | "instagram" | "x" | "email"
+  contactEmailOrHandle String          @unique
+  sourceUrl            String?
+  auditSummary         String?
+  matchedService       String          // "web" | "video" | "design"
+  fitScore             Int             // 1 to 10
+  winProbability       Int             @default(20) // 0 to 100
+  status               String          @default("DISCOVERED") // "DISCOVERED" | "AUDITED" | "SENT" | "REPLIED" | "CONVERTED" | "OPTED_OUT"
+  messageIdHeader      String?
+  nextFollowUpAt       DateTime?
+  draftReply           String?
+  draftStatus          String?         // "PENDING_REVIEW" | "SENT" | "DISCARDED"
+  telegramMessageId    Int?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  messageThreads       MessageThread[]
+
+  @@index([platform])
+  @@index([status])
+  @@index([winProbability])
+  @@index([telegramMessageId])
+}
+
+model MessageThread {
+  id              String   @id @default(cuid())
+  leadId          String
+  lead            Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  direction       String   // "INBOUND" | "OUTBOUND"
+  content         String
+  sentiment       String?  // "POSITIVE_INTEREST" | "OBJECTION_OR_QUESTION" | "NEUTRAL_AUTO_REPLY" | "NEGATIVE_OPT_OUT"
+  portfolioClicks Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([leadId])
+}
+
+model Campaign {
+  id        String   @id @default(cuid())
+  platform  String
+  keywords  String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([platform, active])
+}
+
+model DailyReport {
+  id              String   @id @default(cuid())
+  date            DateTime @unique @default(now())
+  totalSent       Int      @default(0)
+  totalReplies    Int      @default(0)
+  positiveReplies Int      @default(0)
+  summaryText     String
+  createdAt       DateTime @default(now())
+}
+
+model SystemConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,19 @@
+{
+  "name": "freelance-leadgen-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "typecheck": "pnpm -r run typecheck",
+    "dev": "pnpm --filter web dev",
+    "worker": "pnpm --filter worker dev",
+    "seed": "pnpm --filter db run seed",
+    "ai-review": "node scripts/ai-review.mjs",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "typescript": "^5.7.2"
+  }
+}
