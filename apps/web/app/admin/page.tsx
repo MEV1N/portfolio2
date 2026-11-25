@@ -26,6 +26,8 @@ import {
   Play,
   Pause,
   Mail,
+  PhoneCall,
+  Globe,
 } from 'lucide-react';
 
 interface MessageThread {
@@ -373,7 +375,10 @@ function AdminDashboardContent() {
 
   const [activeTab, setActiveTab] = useState<'all' | 'hot' | 'social' | 'emails' | 'campaigns'>('all');
 
-  const isEmailLead = (l: Lead) => l.contactEmailOrHandle.includes('@');
+  const isEmailLead = (l: Lead) =>
+    l.contactEmailOrHandle.includes('@') &&
+    l.contactEmailOrHandle.includes('.') &&
+    !l.contactEmailOrHandle.startsWith('@');
   const isOutreachEmailSent = (l: Lead) =>
     isEmailLead(l) &&
     (Boolean(l.messageIdHeader) || ['SENT', 'REPLIED', 'IN_CONVERSATION', 'CONVERTED'].includes(l.status));
@@ -865,9 +870,22 @@ function AdminDashboardContent() {
 
                   <td className="py-3.5 px-3">
                     <div className="font-semibold text-white">{lead.name}</div>
-                    <div className="text-[11px] text-zinc-500 font-mono truncate max-w-[180px]">
+                    <div className="text-[11px] text-zinc-500 font-mono truncate max-w-[200px]">
                       {lead.contactEmailOrHandle}
                     </div>
+                    {lead.sourceUrl && (
+                      <a
+                        href={lead.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[10px] text-blue-400 hover:text-blue-300 font-medium underline underline-offset-2 mt-0.5"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Open original post or referenced site"
+                      >
+                        <ExternalLink className="w-2.5 h-2.5" />
+                        <span>Referenced Post / Site</span>
+                      </a>
+                    )}
                   </td>
 
                   <td className="py-3.5 px-3 font-mono text-zinc-400">
@@ -1037,6 +1055,80 @@ function AdminDashboardContent() {
 
             {/* Conversation Flow */}
             <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+              {/* Meeting & Call Prep Dossier Card */}
+              <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <PhoneCall className="w-4 h-4 text-indigo-400" />
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                      Meeting &amp; Call Preparation Dossier
+                    </span>
+                  </div>
+                  {activeLeadThread.sourceUrl && (
+                    <a
+                      href={activeLeadThread.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-indigo-500/20 border border-indigo-500/40 text-[11px] font-semibold text-indigo-300 hover:text-white transition"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Open Source Post / Site</span>
+                    </a>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+                    <span className="text-[10px] text-zinc-400 uppercase font-semibold font-mono">
+                      📍 Where This Lead Was Taken From:
+                    </span>
+                    <div className="text-zinc-200 break-all font-mono text-[11px]">
+                      {activeLeadThread.sourceUrl ? (
+                        <a
+                          href={activeLeadThread.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:underline inline-flex items-center gap-1"
+                        >
+                          <span className="line-clamp-2">{activeLeadThread.sourceUrl}</span>
+                          <ExternalLink className="w-3 h-3 inline shrink-0" />
+                        </a>
+                      ) : (
+                        <span className="text-zinc-500">Direct Inbound / Portfolio Form</span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-zinc-400 font-mono">
+                      Platform: <span className="text-white uppercase font-bold">{activeLeadThread.platform}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+                    <span className="text-[10px] text-zinc-400 uppercase font-semibold font-mono">
+                      🎯 Call Talking Points &amp; Strategy:
+                    </span>
+                    <div className="text-zinc-300 text-[11px]">
+                      Pitched Service: <span className="font-bold text-white uppercase">{activeLeadThread.matchedService}</span>
+                    </div>
+                    <div className="text-[10px] text-zinc-400 leading-normal">
+                      {activeLeadThread.matchedService === 'web' && 'Focus on sub-200ms TTFB, mobile Core Web Vitals, fixing LCP banner shifts, and lifting checkout conversions.'}
+                      {activeLeadThread.matchedService === 'video' && 'Focus on the critical 0:30 hook retention cliff, kinetic captions, rhythm cutaways, and short-form reels.'}
+                      {activeLeadThread.matchedService === 'design' && 'Focus on WCAG AAA contrast hierarchy, checkout friction elimination, and reusable Figma tokens.'}
+                    </div>
+                  </div>
+                </div>
+
+                {activeLeadThread.auditSummary && (
+                  <div className="p-2.5 rounded-lg bg-black/40 border border-zinc-800 space-y-1 text-xs">
+                    <span className="text-[10px] text-zinc-400 uppercase font-semibold font-mono">
+                      📊 Verified Audit &amp; Performance Observation:
+                    </span>
+                    <p className="text-zinc-200 font-mono text-[11px] leading-relaxed">
+                      {activeLeadThread.auditSummary}
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-3">
                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Conversation History</div>
                 {activeLeadThread.messageThreads.length === 0 ? (

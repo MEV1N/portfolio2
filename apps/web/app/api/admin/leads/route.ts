@@ -25,6 +25,11 @@ export async function GET(req: NextRequest) {
       ];
     } else if (emailStatus === 'not_sent') {
       where.contactEmailOrHandle = { contains: '@' };
+      where.NOT = [
+        { contactEmailOrHandle: { startsWith: '@' } },
+        { contactEmailOrHandle: { startsWith: 'hn/' } },
+        { contactEmailOrHandle: { startsWith: 'u/' } },
+      ];
       where.messageIdHeader = null;
       where.status = { notIn: ['SENT', 'REPLIED', 'IN_CONVERSATION', 'CONVERTED'] };
     }

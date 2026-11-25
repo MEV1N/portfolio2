@@ -252,6 +252,7 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     await page.waitForTimeout(300);
 
     // Verify modal drawer and draft box components are visible
+    await expect(page.getByText('Meeting & Call Preparation Dossier')).toBeVisible();
     await expect(page.getByText('Gemini Proposed Reply')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Send Reply via Gmail' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Regenerate Draft' })).toBeVisible();
