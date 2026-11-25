@@ -767,7 +767,7 @@ function AdminDashboardContent() {
                   )}
 
                   <button
-                    onClick={() => markLeadStatus(lead.id, 'SENT')}
+                    onClick={() => markLeadStatus(lead.id, 'CONTACTED')}
                     className="text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:text-emerald-400 transition"
                   >
                     Mark Sent
@@ -919,8 +919,10 @@ function AdminDashboardContent() {
                           ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                           : lead.status === 'REPLIED'
                           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                          : lead.status === 'SENT'
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : lead.status === 'SENT' || lead.status === 'CONTACTED'
+                          ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                          : lead.status === 'QUEUED_SOCIAL'
+                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
                           : 'bg-zinc-800 text-zinc-400'
                       }`}
                     >

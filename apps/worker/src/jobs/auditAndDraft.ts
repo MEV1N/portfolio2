@@ -1,6 +1,7 @@
 import { prisma } from 'db';
-import { auditAndDraftPitch } from '../lib/gemini.js';
+import { auditAndDraftPitch, draftRedditSocialDM } from '../lib/gemini.js';
 import { fetchPageSpeedMetrics } from '../lib/pagespeed.js';
+import { sendTelegramRedditAlert } from '../lib/telegram.js';
 import { config } from '../config.js';
 
 /**
@@ -76,7 +77,57 @@ export async function auditAndDraftJob(): Promise<number> {
         ? `[Mobile LCP: ${pageSpeedMetrics.lcp} | TTFB: ${pageSpeedMetrics.ttfb} | Perf: ${pageSpeedMetrics.performanceScore}/100] ${audit.auditSummary}`
         : audit.auditSummary;
 
-      // 3. Save audit and create draft outbound thread
+      // 3. Check if lead is a Reddit prospect without a public email address
+      const isRedditWithoutEmail =
+        lead.platform.toLowerCase() === 'reddit' &&
+        (!lead.contactEmailOrHandle.includes('@') || lead.contactEmailOrHandle.startsWith('u/'));
+
+      if (isRedditWithoutEmail) {
+        console.log(`[audit-and-draft] Drafting tailored Reddit DM (<240 chars) for ${lead.name}...`);
+        const draftedDM = await draftRedditSocialDM(
+          lead.name,
+          lead.sourceUrl || lead.auditSummary,
+          audit.matchedService
+        );
+
+        await prisma.lead.update({
+          where: { id: lead.id },
+          data: {
+            status: 'QUEUED_SOCIAL',
+            fitScore: audit.fitScore,
+            matchedService: audit.matchedService,
+            auditSummary: verifiedSummary,
+            draftReply: draftedDM,
+            draftStatus: 'PENDING_REVIEW',
+            winProbability: Math.min(60, lead.winProbability + 15),
+          },
+        });
+
+        // Instant Telegram Reddit Co-Pilot Alert
+        const telegramMessageId = await sendTelegramRedditAlert({
+          leadId: lead.id,
+          name: lead.name,
+          contactEmailOrHandle: lead.contactEmailOrHandle,
+          sourceUrl: lead.sourceUrl,
+          matchedService: audit.matchedService,
+          fitScore: audit.fitScore,
+          postSummary: verifiedSummary,
+          draftReply: draftedDM,
+        });
+
+        if (telegramMessageId) {
+          await prisma.lead.update({
+            where: { id: lead.id },
+            data: { telegramMessageId },
+          });
+        }
+
+        auditedCount++;
+        console.log(`[audit-and-draft] Reddit social lead ${lead.name} queued as QUEUED_SOCIAL and pushed to Telegram.`);
+        continue;
+      }
+
+      // Standard Email Lead: Save audit and create draft outbound thread
       await prisma.$transaction(async (tx) => {
         await tx.lead.update({
           where: { id: lead.id },

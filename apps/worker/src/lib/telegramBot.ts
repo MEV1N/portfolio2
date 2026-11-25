@@ -330,6 +330,65 @@ async function handleCallbackQuery(query: NonNullable<TelegramUpdate['callback_q
     } catch (e) {
       console.warn('[Telegram Regen Error]:', (e as Error).message);
     }
+  } else if (data.startsWith('social_sent:')) {
+    const leadId = data.replace('social_sent:', '').trim();
+    console.log(`[Telegram Bot] Processing social_sent for lead: ${leadId}`);
+
+    await answerCallbackQuery(query.id, '✅ DM logged as sent!');
+
+    try {
+      const lead = await prisma.lead.findUnique({
+        where: { id: leadId },
+      });
+
+      if (lead) {
+        const nextFollowUpAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+
+        await prisma.$transaction(async (tx) => {
+          await tx.messageThread.create({
+            data: {
+              leadId: lead.id,
+              direction: 'OUTBOUND',
+              content: lead.draftReply || 'Sent Reddit direct message.',
+              sentiment: null,
+              portfolioClicks: 0,
+            },
+          });
+
+          await tx.lead.update({
+            where: { id: lead.id },
+            data: {
+              status: 'CONTACTED',
+              nextFollowUpAt,
+              draftStatus: 'SENT',
+            },
+          });
+        });
+
+        if (messageId) {
+          const cleanHandle = lead.contactEmailOrHandle
+            .replace(/^u\//i, '')
+            .replace(/^@/, '')
+            .trim() || 'redditor';
+          const authorProfileUrl = `https://www.reddit.com/user/${cleanHandle}`;
+          const sourcePostUrl = isValidTelegramButtonUrl(lead.sourceUrl)
+            ? lead.sourceUrl!
+            : 'https://www.reddit.com';
+
+          await editMessageReplyMarkup(messageId, {
+            inline_keyboard: [
+              [{ text: '✅ DM Logged as Sent', callback_data: 'noop' }],
+              [
+                { text: '🔗 Open Post', url: sourcePostUrl },
+                { text: '👤 Author Profile', url: authorProfileUrl },
+              ],
+            ],
+          });
+        }
+      }
+    } catch (e) {
+      console.error(`[Telegram Bot] Error logging social_sent for ${leadId}:`, e);
+    }
   } else if (data.startsWith('optout:')) {
     const leadId = data.replace('optout:', '').trim();
     console.log(`[Telegram Bot] Marking lead optout: ${leadId}`);

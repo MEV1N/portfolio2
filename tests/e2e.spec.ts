@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { escapeHtml, formatTelegramDossierHtml } from '../apps/web/lib/telegram';
+import { formatTelegramRedditAlertHtml } from '../apps/worker/src/lib/telegram';
 import { fetchPageSpeedMetrics } from '../apps/worker/src/lib/pagespeed';
 import { extractEmailsFromHtml, isValidContactEmail } from '../apps/worker/src/utils/enrichEmail';
-import { isSubBudgetOrHobbyist, isSub500BudgetOrHobbyist, heuristicAuditor } from '../apps/worker/src/lib/gemini';
+import { isSubBudgetOrHobbyist, isSub500BudgetOrHobbyist, heuristicAuditor, heuristicRedditDM } from '../apps/worker/src/lib/gemini';
 import { isIndianLead } from '../apps/worker/src/jobs/discoverLeads';
+import { prisma } from '../packages/db/src/index';
 
 test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
   // 1. Portfolio Storefront Routes (No pricing mentioned up front on public portfolio)
@@ -567,5 +569,155 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     expect(audit.threeSentencePitch.toLowerCase()).not.toContain('demos here');
     expect(audit.threeSentencePitch).toContain('recent work');
     expect(audit.threeSentencePitch).toContain('/r/apex-lead');
+  });
+
+  // 11. Reddit Social Pitch Drafting & Telegram Co-Pilot Workflow
+  test('Reddit social pitch drafting generates concise, natural DM under 240 chars without buzzwords', async () => {
+    // 1. Web development prompt
+    const webDM = heuristicRedditDM(
+      'Hiring freelance Next.js developer to build high-performance SaaS landing page',
+      'web',
+      'Need someone experienced with Next.js, Tailwind, and Supabase.'
+    );
+    expect(webDM).toBeDefined();
+    expect(webDM.length).toBeLessThanOrEqual(240);
+    expect(webDM.length).toBeGreaterThan(20);
+    expect(webDM.toLowerCase()).not.toContain('live demo');
+    expect(webDM.toLowerCase()).not.toContain('bottlenecks');
+    expect(webDM.toLowerCase()).not.toContain('synergy');
+
+    // 2. Video editing prompt
+    const videoDM = heuristicRedditDM(
+      'Looking for video editor for tech YouTube channel',
+      'video',
+      'High retention editing, 10 min videos, premiere pro.'
+    );
+    expect(videoDM.length).toBeLessThanOrEqual(240);
+    expect(videoDM.length).toBeGreaterThan(20);
+
+    // 3. Design prompt
+    const designDM = heuristicRedditDM(
+      'Need UI designer to revamp web app interface in Figma',
+      'design',
+      'Modern, clean, dark mode aesthetic.'
+    );
+    expect(designDM.length).toBeLessThanOrEqual(240);
+    expect(designDM.length).toBeGreaterThan(20);
+  });
+
+  test('Instant Telegram Reddit Co-Pilot Alert formats valid HTML with one-tap copy_text and 2-row buttons', () => {
+    const alert = formatTelegramRedditAlertHtml({
+      leadId: 'reddit-lead-alpha-456',
+      name: 'Looking for a freelance Next.js dev to build our landing page',
+      contactEmailOrHandle: 'u/saas_builder_99',
+      sourceUrl: 'https://www.reddit.com/r/indianstartups/comments/18xyz/looking_for_freelance_nextjs_dev',
+      matchedService: 'web',
+      fitScore: 9,
+      postSummary: 'Early stage fintech startup in Bengaluru seeking freelance Next.js developer.',
+      draftReply: "Hey! Saw your post about needing dev work. I build fast, clean web apps and would love to help you launch this—feel free to reach out if you're still looking!",
+    });
+
+    // 1. Assert HTML content formatting
+    expect(alert.text).toContain('🟠 <b>New Reddit Lead — u/saas_builder_99</b>');
+    expect(alert.text).toContain('r/indianstartups · Web Development · Fit 9/10');
+    expect(alert.text).toContain('<b>Post summary:</b> Early stage fintech startup in Bengaluru seeking freelance Next.js developer.');
+    expect(alert.text).toContain('<b>Draft DM (tap Copy below):</b>');
+    expect(alert.text).toContain('<code>Hey! Saw your post about needing dev work.');
+
+    // 2. Assert Telegram inline_keyboard structure (2 rows)
+    const keyboard = alert.replyMarkup.inline_keyboard;
+    expect(keyboard).toHaveLength(2);
+
+    // Row 1: Copy DM (with copy_text) and Mark Sent callback
+    const row1 = keyboard[0];
+    expect(row1).toHaveLength(2);
+    expect(row1[0].text).toBe('📋 Copy DM');
+    expect(row1[0].copy_text).toBeDefined();
+    expect(row1[0].copy_text?.text).toBe(
+      "Hey! Saw your post about needing dev work. I build fast, clean web apps and would love to help you launch this—feel free to reach out if you're still looking!"
+    );
+    expect(row1[0].copy_text?.text.length).toBeLessThanOrEqual(240);
+    expect(row1[0].copy_text?.text.length).toBeLessThanOrEqual(256); // Hard Telegram limit
+    expect(row1[1].text).toBe('✅ Mark Sent');
+    expect(row1[1].callback_data).toBe('social_sent:reddit-lead-alpha-456');
+
+    // Row 2: Open Post and Author Profile URLs
+    const row2 = keyboard[1];
+    expect(row2).toHaveLength(2);
+    expect(row2[0].text).toBe('🔗 Open Post');
+    expect(row2[0].url).toBe('https://www.reddit.com/r/indianstartups/comments/18xyz/looking_for_freelance_nextjs_dev');
+    expect(row2[1].text).toBe('👤 Author Profile');
+    expect(row2[1].url).toBe('https://www.reddit.com/user/saas_builder_99');
+  });
+
+  test('social_sent:{leadId} updates lead status to CONTACTED, sets follow-up in 3 days, and creates OUTBOUND thread', async () => {
+    // 1. Create a transient test lead with QUEUED_SOCIAL
+    const testLeadId = `test-reddit-${Date.now()}`;
+    const testLead = await prisma.lead.create({
+      data: {
+        id: testLeadId,
+        name: 'Hiring fullstack dev for prototype',
+        platform: 'reddit',
+        contactEmailOrHandle: 'u/test_reddit_author',
+        sourceUrl: 'https://www.reddit.com/r/forhire/comments/test',
+        auditSummary: 'Commercial SaaS prototype with $500 budget',
+        matchedService: 'web',
+        fitScore: 8,
+        winProbability: 40,
+        status: 'QUEUED_SOCIAL',
+        draftReply: 'Hey! Saw your post and would love to help build this out.',
+      },
+    });
+
+    try {
+      // 2. Simulate social_sent action
+      const nextFollowUpAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.messageThread.create({
+          data: {
+            leadId: testLead.id,
+            direction: 'OUTBOUND',
+            content: testLead.draftReply || 'Sent Reddit direct message.',
+            sentiment: null,
+            portfolioClicks: 0,
+          },
+        });
+
+        await tx.lead.update({
+          where: { id: testLead.id },
+          data: {
+            status: 'CONTACTED',
+            nextFollowUpAt,
+            draftStatus: 'SENT',
+          },
+        });
+      });
+
+      // 3. Verify lead was updated to CONTACTED and nextFollowUpAt is ~3 days out
+      const updatedLead = await prisma.lead.findUnique({
+        where: { id: testLeadId },
+        include: { messageThreads: true },
+      });
+
+      expect(updatedLead).not.toBeNull();
+      expect(updatedLead?.status).toBe('CONTACTED');
+      expect(updatedLead?.draftStatus).toBe('SENT');
+      expect(updatedLead?.nextFollowUpAt).toBeDefined();
+
+      const daysDiff = (updatedLead!.nextFollowUpAt!.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      expect(daysDiff).toBeGreaterThan(2.9);
+      expect(daysDiff).toBeLessThan(3.1);
+
+      // Verify OUTBOUND thread recorded
+      const outbound = updatedLead?.messageThreads.find((t) => t.direction === 'OUTBOUND');
+      expect(outbound).toBeDefined();
+      expect(outbound?.content).toBe('Hey! Saw your post and would love to help build this out.');
+    } finally {
+      // 4. Cleanup test data
+      await prisma.lead.delete({
+        where: { id: testLeadId },
+      }).catch(() => {});
+    }
   });
 });

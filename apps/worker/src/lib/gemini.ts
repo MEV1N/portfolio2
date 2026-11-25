@@ -193,3 +193,99 @@ export function heuristicAuditor(
     threeSentencePitch: `${greeting} came across your work on ${platform} and really loved what you're building. Noticed a few quick tweaks to page speed and mobile flow that could help visitors stick around longer. You can check out some of my recent work and projects here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat!`,
   };
 }
+
+/**
+ * Generates a concise, natural, 2-sentence Reddit DM under 240 characters.
+ * Fits Telegram's 256-character copy_text limit with zero buzzwords or corporate jargon.
+ */
+export function heuristicRedditDM(
+  leadName: string,
+  matchedService: string = 'web',
+  postContext?: string | null
+): string {
+  const service = matchedService.toLowerCase();
+  let text = '';
+  if (service === 'video') {
+    text = "Hey! Saw your post and loved what you're building. I edit high-retention video content and'd love to help produce this—let me know if you're open to chatting!";
+  } else if (service === 'design') {
+    text = "Hey! Saw your post about design work. I design clean UI/UX and web systems and'd love to help out—let me know if you're still looking!";
+  } else {
+    text = "Hey! Saw your post about needing dev work. I build fast, clean web apps and would love to help you launch this—feel free to reach out if you're still looking!";
+  }
+
+  // Strictly enforce under 240 characters
+  if (text.length > 240) {
+    text = text.slice(0, 237).trim() + '...';
+  }
+  return text;
+}
+
+/**
+ * Calls gemini-3.5-flash-lite (with fallback to gemini-3.8-flash) to draft a tailored Reddit DM <= 240 chars.
+ */
+export async function draftRedditSocialDM(
+  leadName: string,
+  postContext?: string | null,
+  matchedService: string = 'web'
+): Promise<string> {
+  const apiKey = config.geminiApiKey;
+  if (!apiKey) {
+    return heuristicRedditDM(leadName, matchedService, postContext);
+  }
+
+  const prompt = `You are Mevin, a friendly solo fullstack developer, video editor, and designer.
+A founder or creator posted on Reddit asking for help, feedback, or a collaborator:
+Post Title: ${leadName}
+Context/Need: ${postContext || 'Digital project'}
+Matched Service: ${matchedService}
+
+Write a natural, friendly 2-sentence direct message (DM) to send them privately on Reddit.
+STRICT REQUIREMENTS:
+1. Length: MUST be strictly UNDER 220 CHARACTERS (Hard ceiling: 240 characters total).
+2. Tone: Warm, human, and low-pressure. No robotic phrases, corporate jargon, or buzzwords.
+3. Content:
+   - Sentence 1: A brief note showing you saw their post/project.
+   - Sentence 2: Mention you can help with ${matchedService} and ask if they are open to chatting.
+4. Strictly NO links, NO pricing, NO demo claims.
+
+Return ONLY the raw DM text with no quotes or markdown.`;
+
+  const models = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+  for (const model of models) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.3,
+              maxOutputTokens: 120,
+            },
+          }),
+        }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        let raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (raw) {
+          raw = raw.replace(/^["']|["']$/g, '').trim();
+          if (raw.length > 240) {
+            raw = raw.slice(0, 237).trim() + '...';
+          }
+          if (raw.length > 20) {
+            return raw;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn(`[Gemini Reddit DM ${model}] Error:`, (err as Error).message);
+    }
+  }
+
+  return heuristicRedditDM(leadName, matchedService, postContext);
+}
+

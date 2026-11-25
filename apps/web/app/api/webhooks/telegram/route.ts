@@ -119,6 +119,63 @@ export async function POST(req: NextRequest) {
         } else {
           await answerTelegramCallbackQuery(query.id, '⚠️ Failed to send');
         }
+      } else if (data.startsWith('social_sent:')) {
+        const leadId = data.replace('social_sent:', '').trim();
+        await answerTelegramCallbackQuery(query.id, '✅ DM logged as sent!');
+
+        try {
+          const lead = await prisma.lead.findUnique({
+            where: { id: leadId },
+          });
+
+          if (lead) {
+            const nextFollowUpAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+
+            await prisma.$transaction(async (tx) => {
+              await tx.messageThread.create({
+                data: {
+                  leadId: lead.id,
+                  direction: 'OUTBOUND',
+                  content: lead.draftReply || 'Sent Reddit direct message.',
+                  sentiment: null,
+                  portfolioClicks: 0,
+                },
+              });
+
+              await tx.lead.update({
+                where: { id: lead.id },
+                data: {
+                  status: 'CONTACTED',
+                  nextFollowUpAt,
+                  draftStatus: 'SENT',
+                },
+              });
+            });
+
+            if (messageId) {
+              const cleanHandle = lead.contactEmailOrHandle
+                .replace(/^u\//i, '')
+                .replace(/^@/, '')
+                .trim() || 'redditor';
+              const authorProfileUrl = `https://www.reddit.com/user/${cleanHandle}`;
+              const sourcePostUrl = isValidTelegramButtonUrl(lead.sourceUrl)
+                ? lead.sourceUrl!
+                : 'https://www.reddit.com';
+
+              await editTelegramReplyMarkup(messageId, {
+                inline_keyboard: [
+                  [{ text: '✅ DM Logged as Sent', callback_data: 'noop' }],
+                  [
+                    { text: '🔗 Open Post', url: sourcePostUrl },
+                    { text: '👤 Author Profile', url: authorProfileUrl },
+                  ],
+                ],
+              });
+            }
+          }
+        } catch (e) {
+          console.error(`[Telegram Webhook] Error logging social_sent for ${leadId}:`, e);
+        }
       } else if (data.startsWith('optout:')) {
         const leadId = data.replace('optout:', '').trim();
         await prisma.lead.update({
