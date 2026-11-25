@@ -162,7 +162,7 @@ export default function VideoWorkPage() {
       {/* CTA Box */}
       <div className="p-8 rounded-2xl border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-zinc-950 to-indigo-950/40 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
-          <div className="text-xs font-mono text-purple-400 font-semibold uppercase tracking-wider mb-1">Retention Sprints starting at ₹5,000 INR (~$55 USD)</div>
+          <div className="text-xs font-mono text-purple-400 font-semibold uppercase tracking-wider mb-1">Custom Video Sprints</div>
           <h3 className="text-xl font-bold text-white">Want a retention-first video sprint?</h3>
           <p className="text-sm text-zinc-400 mt-1">Send a link to your raw footage or latest upload for a retention audit.</p>
         </div>

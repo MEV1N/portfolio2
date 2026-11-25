@@ -6,13 +6,14 @@ import { isSubBudgetOrHobbyist, isSub500BudgetOrHobbyist } from '../apps/worker/
 import { isIndianLead } from '../apps/worker/src/jobs/discoverLeads';
 
 test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
-  // 1. Portfolio Storefront Routes
+  // 1. Portfolio Storefront Routes (No pricing mentioned up front on public portfolio)
   test('Public Portfolio landing page renders with high contrast and metrics', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByText('PORTFOLIO').first()).toBeVisible();
     await expect(page.getByText('About Mevin')).toBeVisible();
     await expect(page.getByText('SPRINT PACKAGES')).toBeVisible();
-    await expect(page.getByText('₹5,000').first()).toBeVisible();
+    await expect(page.getByText('Custom Scope').first()).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('₹5,000');
     await expect(page.getByText('TOOLS I USE')).toBeVisible();
     await expect(page.getByRole('heading', { name: /LET'S.*WORK.*TOGETHER/i })).toBeVisible();
     await expect(page.locator('img[alt="Mevin"]')).toBeVisible();
@@ -24,7 +25,8 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     await expect(page.getByText('Time To First Byte (TTFB)')).toBeVisible();
     await expect(page.getByText('140ms')).toBeVisible();
     await expect(page.getByText('Apex Cloud Systems')).toBeVisible();
-    await expect(page.getByText(/₹5,000/)).toBeVisible();
+    await expect(page.getByText('Custom Engineering Sprints')).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('₹5,000');
   });
 
   test('Dedicated Video Editing Case Study page renders with retention breakdown', async ({ page }) => {
@@ -32,7 +34,8 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     await expect(page.locator('h1')).toContainText('Defeating the 0:30 Cliff');
     await expect(page.getByText('TechPulse Media').first()).toBeVisible();
     await expect(page.getByText('Retention Timeline Preview')).toBeVisible();
-    await expect(page.getByText(/₹5,000/)).toBeVisible();
+    await expect(page.getByText('Custom Video Sprints')).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('₹5,000');
   });
 
   test('Dedicated UI/UX Design Case Study page renders with interactive contrast mode', async ({ page }) => {
@@ -40,7 +43,8 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     await expect(page.locator('h1')).toContainText('Figma Design Systems');
     await expect(page.getByText('Interactive Contrast & Hierarchy Audit')).toBeVisible();
     await expect(page.getByText('7.2:1 (WCAG AAA Passed)')).toBeVisible();
-    await expect(page.getByText(/₹5,000/)).toBeVisible();
+    await expect(page.getByText('Custom Design Sprints')).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('₹5,000');
   });
 
   // 2. Click Tracking Route /r/[leadId]

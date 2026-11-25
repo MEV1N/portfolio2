@@ -648,7 +648,7 @@ export default function PortfolioPage() {
                 lineHeight: 1.6,
               }}
             >
-              Rapid, high-impact milestone sprints for Indian and global founders. Starting at ₹5,000 INR (~$55 USD) with dual-currency transparency.
+              Rapid, high-impact milestone sprints for Indian and global founders, tailored to your exact project scope and roadmap.
             </p>
           </div>
 
@@ -680,8 +680,8 @@ export default function PortfolioPage() {
                   Next.js 15 Speed Sprint
                 </h3>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '28px', fontWeight: 800, color: '#fff' }}>₹5,000</span>
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>INR (~$55 USD)</span>
+                  <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Custom Scope</span>
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Tailored Deliverables</span>
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: 1.6, marginBottom: '20px' }}>
                   Sub-200ms TTFB optimization, Google PageSpeed score elevation (90+ mobile), image optimization, and responsive Tailwind UI fixes.
@@ -724,8 +724,8 @@ export default function PortfolioPage() {
                   Hook &amp; Pacing Sprint
                 </h3>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '28px', fontWeight: 800, color: '#fff' }}>₹5,000</span>
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>INR (~$55 USD)</span>
+                  <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Custom Scope</span>
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Tailored Deliverables</span>
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: 1.6, marginBottom: '20px' }}>
                   First 0:30 hook redesign, kinetic captions, dynamic B-roll rhythm, and 3-track sound design for YouTube essays &amp; viral short-form reels.
@@ -768,8 +768,8 @@ export default function PortfolioPage() {
                   Figma Conversion Audit
                 </h3>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '28px', fontWeight: 800, color: '#fff' }}>₹5,000</span>
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>INR (~$55 USD)</span>
+                  <span style={{ fontSize: '20px', fontWeight: 700, color: '#fff' }}>Custom Scope</span>
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px' }}>Tailored Deliverables</span>
                 </div>
                 <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: 1.6, marginBottom: '20px' }}>
                   WCAG AAA contrast audit, cognitive load reduction, checkout flow simplification, and reusable Figma tokens for web and mobile apps.
@@ -803,7 +803,7 @@ export default function PortfolioPage() {
             LET'S<br />WORK<br /><span>TOGETHER.</span>
           </h2>
           <p>
-            Have a project in mind? Sprints start at <strong>₹5,000 INR</strong> (~$55 USD) for focused web, video, and design deliverables. Let's create something memorable.
+            Have a project in mind? Let's discuss your timeline, scope, and goals to create something memorable.
           </p>
 
           <div className="contact-links-list">

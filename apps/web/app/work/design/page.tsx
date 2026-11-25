@@ -141,7 +141,7 @@ export default function DesignWorkPage() {
       {/* CTA Box */}
       <div className="p-8 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-zinc-950 to-teal-950/40 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
-          <div className="text-xs font-mono text-emerald-400 font-semibold uppercase tracking-wider mb-1">Design Sprints starting at ₹5,000 INR (~$55 USD)</div>
+          <div className="text-xs font-mono text-emerald-400 font-semibold uppercase tracking-wider mb-1">Custom Design Sprints</div>
           <h3 className="text-xl font-bold text-white">Ready for a comprehensive UX audit?</h3>
           <p className="text-sm text-zinc-400 mt-1">Get an annotated Figma file uncovering your 5 biggest conversion leaks.</p>
         </div>

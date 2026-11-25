@@ -97,9 +97,9 @@ export default function WebWorkPage() {
       {/* CTA Box */}
       <div className="p-8 rounded-2xl border border-blue-500/30 bg-gradient-to-r from-blue-950/40 via-zinc-950 to-indigo-950/40 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
-          <div className="text-xs font-mono text-blue-400 font-semibold uppercase tracking-wider mb-1">Sprint Pricing starting at ₹5,000 INR (~$55 USD)</div>
+          <div className="text-xs font-mono text-blue-400 font-semibold uppercase tracking-wider mb-1">Custom Engineering Sprints</div>
           <h3 className="text-xl font-bold text-white">Need a high-performance web sprint?</h3>
-          <p className="text-sm text-zinc-400 mt-1">We take on 2 engineering projects per month with transparent dual INR/USD invoicing.</p>
+          <p className="text-sm text-zinc-400 mt-1">We take on 2 engineering projects per month with deliverables tailored to your goals.</p>
         </div>
         <a
           href="/#inquire"

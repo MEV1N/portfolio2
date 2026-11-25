@@ -100,7 +100,7 @@ Instructions:
    - Sentence 1: A genuine, friendly compliment about what they are building or their content. Sound like a real person writing a direct email, NOT an AI bot or corporate agency.
    - Sentence 2: A simple, non-jargony observation of an area they could improve. If page load metrics are provided above, mention naturally that the mobile page takes about ${metrics?.lcp || 'a few seconds'} to load the main banner, which might cause people to click away. Strictly NO buzzwords, NO acronyms (avoid TTFB, LCP, SSR, etc.), NO robotic phrases like "audited your digital presence", "sub-200ms architecture", or "bottlenecks".
    - Sentence 3: A friendly, low-pressure invite to check out similar work and chat: "Put together a few similar projects and demos you can check out here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat next week!"
-   - LOCALIZATION & PRICING: If the prospect is in India (tagged [Currency: INR], .in domain, or Indian cities), keep it natural in Indian Rupees (₹ INR, sprints starting at ₹5,000 INR). For international prospects, keep dual clarity ($55+ USD / ₹5,000 INR) if pricing is mentioned.
+   - NO PRICING IN PITCH: Do NOT quote or mention pricing or rates in the cold pitch. Pricing is discussed and finalized personally on a call after project scope is established.
 
 Respond ONLY in valid JSON format:
 {
@@ -189,6 +189,6 @@ function heuristicAuditor(
     fitScore: 8,
     matchedService,
     auditSummary: `Identified an opportunity to improve user experience and speed on ${platform}.`,
-    threeSentencePitch: `${greeting} came across your work on ${platform} and really loved what you're building. Noticed a few quick tweaks to page speed and mobile flow that could help visitors stick around longer. Put together a few similar projects and live demos here (${isIndian ? 'starting at ₹5,000 INR' : 'starting at ₹5,000 INR / $55 USD'}): ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat!`,
+    threeSentencePitch: `${greeting} came across your work on ${platform} and really loved what you're building. Noticed a few quick tweaks to page speed and mobile flow that could help visitors stick around longer. Put together a few similar projects and live demos here: ${config.nextPublicAppUrl}/r/${leadId} — let me know if you'd be open to a quick 5-min chat!`,
   };
 }

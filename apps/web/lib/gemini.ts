@@ -186,7 +186,7 @@ STRICT RULES:
    - If they ask for a call or availability, confirm interest and propose 2 concrete time windows (e.g. "I'm free Thursday at 2 PM or Friday at 11 AM EST if either works?").
    - NEVER invent excuses (do NOT mention bounced emails, technical glitches, or delivery issues).
    - NEVER repeat the original cold pitch or audit summary.
-   - Do NOT bring up pricing unless they explicitly asked for rates/pricing. If they asked for pricing, give a concise direct range in Indian Rupees for Indian prospects or dual INR/USD (e.g. "sprints start at ₹5,000 INR (~$55 USD)").
+   - Do NOT bring up pricing or quote rates. If they explicitly ask about pricing, say that projects are tailored to scope and propose a quick 10-minute call to understand their needs before quoting.
 4. TONE:
    - Sound like a real solo developer/creator texting a colleague.
    - NO buzzwords (no "performance sprints", "synergy", "value-add", "double your conversion").
