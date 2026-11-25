@@ -11,8 +11,7 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
     await page.goto('/');
     await expect(page.getByText('PORTFOLIO').first()).toBeVisible();
     await expect(page.getByText('About Mevin')).toBeVisible();
-    await expect(page.getByText('SPRINT PACKAGES')).toBeVisible();
-    await expect(page.getByText('Custom Scope').first()).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('SPRINT PACKAGES');
     await expect(page.locator('body')).not.toContainText('₹5,000');
     await expect(page.getByText('TOOLS I USE')).toBeVisible();
     await expect(page.getByRole('heading', { name: /LET'S.*WORK.*TOGETHER/i })).toBeVisible();
