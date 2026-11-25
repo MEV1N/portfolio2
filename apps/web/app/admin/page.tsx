@@ -28,6 +28,7 @@ import {
   Mail,
   PhoneCall,
   Globe,
+  Loader2,
 } from 'lucide-react';
 
 interface MessageThread {
@@ -85,6 +86,7 @@ function AdminDashboardContent() {
   const [newCampPlatform, setNewCampPlatform] = useState<string>('reddit');
   const [newCampKeywords, setNewCampKeywords] = useState<string>('');
   const [isAddingCampaign, setIsAddingCampaign] = useState<boolean>(false);
+  const [dispatchingId, setDispatchingId] = useState<string | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -323,6 +325,41 @@ function AdminDashboardContent() {
       setActionNotice({ text: 'Network error sending reply.', type: 'error' });
     } finally {
       setSendingDraft(false);
+    }
+  };
+
+  const handleDispatchNow = async (leadId: string) => {
+    setDispatchingId(leadId);
+    setActionNotice(null);
+    try {
+      const res = await fetch(`/api/leads/${leadId}/dispatch-now`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setActionNotice({
+          text: `Email dispatched successfully via Gmail SMTP! Message-ID: ${data.messageId}`,
+          type: 'success',
+        });
+        if (data.lead) {
+          setLeads((prev) => prev.map((l) => (l.id === leadId ? data.lead : l)));
+          if (activeLeadThread?.id === leadId) {
+            setActiveLeadThread(data.lead);
+          }
+        }
+      } else {
+        setActionNotice({
+          text: data.error || 'Failed to dispatch email.',
+          type: 'error',
+        });
+      }
+    } catch (err) {
+      setActionNotice({
+        text: `Network error: ${(err as Error).message}`,
+        type: 'error',
+      });
+    } finally {
+      setDispatchingId(null);
     }
   };
 
@@ -949,6 +986,24 @@ function AdminDashboardContent() {
                           <span className="text-[10px] text-zinc-500 font-mono">
                             {lead.status === 'AUDITED' ? 'Queued' : lead.status === 'DISCOVERED' ? 'Pending Audit' : 'Draft'}
                           </span>
+                          {lead.status === 'AUDITED' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDispatchNow(lead.id);
+                              }}
+                              disabled={dispatchingId === lead.id}
+                              className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-600 hover:bg-blue-500 text-white transition disabled:opacity-50 w-fit"
+                              title="Send Email Now via Gmail SMTP"
+                            >
+                              {dispatchingId === lead.id ? (
+                                <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                              ) : (
+                                <Send className="w-2.5 h-2.5" />
+                              )}
+                              <span>Send Now</span>
+                            </button>
+                          )}
                         </div>
                       )
                     ) : (
@@ -1221,6 +1276,21 @@ function AdminDashboardContent() {
 
                 {/* Draft Actions Bar */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {isEmailLead(activeLeadThread) && activeLeadThread.status === 'AUDITED' && (
+                    <button
+                      onClick={() => handleDispatchNow(activeLeadThread.id)}
+                      disabled={dispatchingId === activeLeadThread.id}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition disabled:opacity-50 shadow-md shadow-emerald-950/40"
+                    >
+                      {dispatchingId === activeLeadThread.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                      <span>{dispatchingId === activeLeadThread.id ? 'Dispatching SMTP...' : 'Send Now (Gmail SMTP)'}</span>
+                    </button>
+                  )}
+
                   <button
                     onClick={handleSendDraft}
                     disabled={sendingDraft || !editableDraft.trim()}

@@ -1,5 +1,6 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
+import { prisma } from 'db';
 import { config } from './config.js';
 import { discoverLeadsJob } from './jobs/discoverLeads.js';
 import { auditAndDraftJob } from './jobs/auditAndDraft.js';
@@ -93,14 +94,30 @@ export async function addJobToPipeline(name: string, data = {}) {
 }
 
 /**
- * Triggers an immediate sequential run of the pipeline when toggled active.
+ * Triggers an immediate run of the pipeline when toggled active.
+ * Checks for waiting AUDITED email leads and prioritizes dispatchOutreach immediately without waiting for cron.
  */
 export async function triggerPipelineRun(): Promise<void> {
   console.log('[Pipeline Trigger] Immediate discovery & outreach pass triggered.');
   try {
+    const pendingAuditedCount = await prisma.lead.count({
+      where: {
+        status: 'AUDITED',
+        contactEmailOrHandle: { contains: '@' },
+      },
+    });
+
+    if (pendingAuditedCount > 0) {
+      console.log(`[Pipeline Trigger] Found ${pendingAuditedCount} AUDITED leads ready for outreach. Prioritizing immediate dispatchOutreach...`);
+      await addJobToPipeline('dispatch-outreach');
+    }
+
     await addJobToPipeline('discover-leads');
     await addJobToPipeline('audit-and-draft');
-    await addJobToPipeline('dispatch-outreach');
+
+    if (pendingAuditedCount === 0) {
+      await addJobToPipeline('dispatch-outreach');
+    }
   } catch (err) {
     console.error('[Pipeline Trigger Error]:', err);
   }

@@ -5,6 +5,7 @@ import { fetchPageSpeedMetrics } from '../apps/worker/src/lib/pagespeed';
 import { extractEmailsFromHtml, isValidContactEmail } from '../apps/worker/src/utils/enrichEmail';
 import { isSubBudgetOrHobbyist, isSub500BudgetOrHobbyist, heuristicAuditor, heuristicRedditDM } from '../apps/worker/src/lib/gemini';
 import { isIndianLead } from '../apps/worker/src/jobs/discoverLeads';
+import { isWithinSendingWindowIST } from '../apps/worker/src/jobs/dispatchOutreach';
 import { prisma } from '../packages/db/src/index';
 
 test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
@@ -718,6 +719,46 @@ test.describe('Freelance Portfolio & 24/7 Lead-Gen E2E Suite', () => {
       await prisma.lead.delete({
         where: { id: testLeadId },
       }).catch(() => {});
+    }
+  });
+
+  // 12. Dispatch Outreach Window & Manual Send Now API Verification
+  test('Sending window (08:00 – 22:30 IST) correctly accepts daytime IST and rejects late-night hours', () => {
+    // 10:30 AM IST (UTC 05:00)
+    const morningIST = new Date('2026-11-25T05:00:00.000Z');
+    const resMorning = isWithinSendingWindowIST(morningIST);
+    expect(resMorning.inWindow).toBe(true);
+    expect(resMorning.currentIST).toBe('10:30');
+
+    // 21:15 PM IST (UTC 15:45)
+    const eveningIST = new Date('2026-11-25T15:45:00.000Z');
+    const resEvening = isWithinSendingWindowIST(eveningIST);
+    expect(resEvening.inWindow).toBe(true);
+    expect(resEvening.currentIST).toBe('21:15');
+
+    // 03:00 AM IST (UTC 21:30 previous day) - outside window
+    const midnightIST = new Date('2026-11-24T21:30:00.000Z');
+    const resMidnight = isWithinSendingWindowIST(midnightIST);
+    expect(resMidnight.inWindow).toBe(false);
+    expect(resMidnight.currentIST).toBe('03:00');
+
+    // 23:00 PM IST (UTC 17:30) - outside window
+    const lateNightIST = new Date('2026-11-25T17:30:00.000Z');
+    const resLateNight = isWithinSendingWindowIST(lateNightIST);
+    expect(resLateNight.inWindow).toBe(false);
+    expect(resLateNight.currentIST).toBe('23:00');
+  });
+
+  test('POST /api/leads/[leadId]/dispatch-now requires authentication and rejects unauthenticated requests', async ({ request }) => {
+    try {
+      const res = await request.post('/api/leads/dummy-id/dispatch-now');
+      expect(res.status()).toBe(401);
+    } catch (e) {
+      if ((e as Error).message.includes('ECONNREFUSED')) {
+        test.skip(true, 'Local dev server not running on port 3000');
+      } else {
+        throw e;
+      }
     }
   });
 });

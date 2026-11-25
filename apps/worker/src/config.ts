@@ -1,9 +1,24 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 import dotenv from 'dotenv';
 
-// Load root .env
-dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Locate and load monorepo root .env from multiple candidate paths
+const candidateEnvPaths = [
+  path.resolve(__dirname, '../../../.env'), // From apps/worker/src or apps/worker/dist to monorepo root
+  path.resolve(__dirname, '../../.env'),    // From apps/worker to monorepo root
+  path.resolve(process.cwd(), '.env'),      // When executed from monorepo root
+  path.resolve(process.cwd(), '../../.env'),// When executed from apps/worker cwd
+];
+
+for (const p of candidateEnvPaths) {
+  if (fs.existsSync(p)) {
+    dotenv.config({ path: p });
+  }
+}
 
 export const config = {
   geminiApiKey: process.env.GEMINI_API_KEY || '',
